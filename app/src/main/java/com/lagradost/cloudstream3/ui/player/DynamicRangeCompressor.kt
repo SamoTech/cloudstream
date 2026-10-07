@@ -1,6 +1,7 @@
 package com.lagradost.cloudstream3.ui.player
 
 import androidx.annotation.OptIn
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
 import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.AudioProcessor.AudioFormat
@@ -38,6 +39,13 @@ import kotlin.math.pow
  * enable/disable works instantly without reloading the player — when disabled,
  * samples are copied unchanged (passthrough).
  */
+internal const val COMPRESSOR_ENABLED_KEY = "player_compressor_enabled"
+internal const val COMPRESSOR_THRESHOLD_KEY = "player_compressor_threshold"
+internal const val COMPRESSOR_RATIO_KEY = "player_compressor_ratio"
+internal const val COMPRESSOR_ATTACK_KEY = "player_compressor_attack"
+internal const val COMPRESSOR_RELEASE_KEY = "player_compressor_release"
+internal const val COMPRESSOR_MAKEUP_KEY = "player_compressor_makeup"
+
 @OptIn(UnstableApi::class)
 class DynamicRangeCompressor : AudioProcessor {
 
@@ -85,6 +93,16 @@ class DynamicRangeCompressor : AudioProcessor {
      * Too high risks clipping on uncompressed peaks below the threshold.
      */
     @Volatile var makeupGain: Float = 12f  // dB, range 0..24
+
+
+    fun restoreSavedSettings() {
+        enabled = getKey(COMPRESSOR_ENABLED_KEY) ?: false
+        threshold = getKey(COMPRESSOR_THRESHOLD_KEY) ?: -24f
+        ratio = getKey(COMPRESSOR_RATIO_KEY) ?: 8f
+        attackMs = getKey(COMPRESSOR_ATTACK_KEY) ?: 5f
+        releaseMs = getKey(COMPRESSOR_RELEASE_KEY) ?: 400f
+        makeupGain = getKey(COMPRESSOR_MAKEUP_KEY) ?: 12f
+    }
 
     private var format       = AudioFormat.NOT_SET
     private var isFloat      = false
